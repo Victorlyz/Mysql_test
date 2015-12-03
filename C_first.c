@@ -2,7 +2,7 @@
 #include<stdio.h>
 #include<stdlib.h>
 
-int main(int argc, char *agrv)
+int main(int argc, char *agrv[])
 {
   /**/
   SN6     snResult
