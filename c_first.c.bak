@@ -7,32 +7,39 @@ int main(int argc, char *argv[]) {
     long int   snResult = 0;
     char       chOption[1+1];
     char       chBuff[100];
-    char       chSql_insert[100];
     MYSQL      *pMysql = NULL;
     MYSQL_RES  *pRes = NULL;
     MYSQL_ROW  *pRow = NULL;
+    MYSQL      *psnResult = NULL;
+
+    char chServer[] = "localhost";
+    char chUser[] = "root";
+    char chPassword[] = "test123";
+    char chDatabase[] = "db_test";
 
     memset(chOption, 0x00, sizeof(chOption));
     memset(chBuff, 0x00, sizeof(chBuff));
-    memset(chSql_insert, 0x00, sizeof(chSql_insert));
 
-    if(argc < 2) {
+    if(argc != 2) {
         printf("Missing input parameters ! OPTION_TYPE \n \
                 1:create 2:select 3:insert 4:update 5:delete \n");
         return 1;
     }
 
+
+    /*MYSQL初始化及连接*/
     pMysql = mysql_init(NULL);
     if(NULL ==  pMysql) {
         fprintf(stderr, "mysql_init error !");
         return 1;
     }
-
-
-    /*连接MYSQL*/
-    snResult = Mysql_connect(pMysql);
-    if(snResult != 0) {
-        printf("Mysql_connect error ! \n");
+    psnResult = mysql_real_connect(pMysql, chServer, chUser, chPassword, chDatabase, 0, NULL, 0);
+    if(pMysql != psnResult) {
+        fprintf(stderr, "mysql_real_connect error ! %s\n", mysql_error(pMysql));
+        return 1;
+    }
+    else {
+        printf("MySQL Connected!\n");
     }
 
     /*新增数据表*/
@@ -45,9 +52,7 @@ int main(int argc, char *argv[]) {
 
     /*插入数据*/
     if('3' == argv[1][0]) {
-        sprintf(chSql_insert,"INSERT INTO %s (%s, %s, %s) \
-       VALUES ('%s', '%s', '%s')", argv[2], argv[3], argv[4],argv[5], argv[6], argv[7], argv[8], argv[9]);
-        snResult = Mysql_insert(pMysql, chSql_insert);
+        snResult = Mysql_insert(pMysql);
         if(snResult != 0) {
             printf("Mysql_insert error ! \n");
         }
@@ -56,23 +61,8 @@ int main(int argc, char *argv[]) {
         return 0;
 }
 
-int Mysql_connect(MYSQL *pMysql) {
-    MYSQL  *psnResult = NULL;
 
-    char chServer[] = "localhost";
-    char chUser[] = "root";
-    char chPassword[] = "test123";
-    char chDatabase[] = "db_test";
 
-    psnResult = mysql_real_connect(pMysql, chServer, chUser, chPassword, chDatabase, 0, NULL, 0);
-    if(pMysql != psnResult) {
-        fprintf(stderr, "mysql_real_connect error ! %s\n", mysql_error(pMysql));
-        return 1;
-    }
-    else {
-        printf("MySQL Connected!\n");
-    }
-}
 int Mysql_create(MYSQL *pMysql) {
     int    snResult;
 
@@ -93,10 +83,11 @@ int Mysql_create(MYSQL *pMysql) {
     return 0;
 }
 
-int Mysql_insert(MYSQL *pMysql, char *chSql_insert) {
+int Mysql_insert(MYSQL *pMysql) {
     long int snResult = 0;
 
-    snResult = mysql_query(pMysql, chSql_insert);
+    snResult = mysql_query(pMysql, "INSERT INTO history4 (active, who) VALUES \
+                                                  ('create the table','Lyz')");
     if(snResult != 0) {
         fprintf(stderr, "msyql_query error ! %s\n", mysql_error(pMysql));
         return 1;
